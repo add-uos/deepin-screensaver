@@ -1,0 +1,14 @@
+// SPDX-FileCopyrightText: 2026 UnionTech Software Technology Co., Ltd.
+//
+// SPDX-License-Identifier: GPL-3.0-or-later
+
+#ifndef DDLOG_H
+#define DDLOG_H
+
+#include <QDebug>
+#include <QLoggingCategory>
+
+// 全项目统一的日志分类，便于 DConfig 调试模式（deepin-debug-config）按应用统一过滤
+inline Q_LOGGING_CATEGORY(appLog, "org.deepin.screensaver")
+
+#endif   // DDLOG_H

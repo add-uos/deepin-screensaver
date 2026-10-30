@@ -36,6 +36,7 @@ set(SOURCES
     utils.cpp
     singlecustomsetting.cpp
     commandlinehelper.cpp
+    logger.cpp
 )
 
 # 头文件
@@ -49,6 +50,8 @@ set(HEADERS
     utils.h
     singlecustomsetting.h
     commandlinehelper.h
+    logger.h
+    ddlog.h
 )
 
 # 翻译文件

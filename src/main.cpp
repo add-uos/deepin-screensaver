@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2017 ~ 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2017-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
@@ -13,6 +13,8 @@
 #include "customconfig.h"
 #include "commandlinehelper.h"
 #include "singlecustomsetting.h"
+#include "logger.h"
+#include "ddlog.h"
 
 DWIDGET_USE_NAMESPACE
 
@@ -37,9 +39,14 @@ static QString buildVersion(const QString &fallbackVersion)
 
 int main(int argc, char *argv[])
 {
+    // 动态日志规则（DConfig log_rules）须在任何日志打印前初始化：
+    // MLogger 内部会先 qunsetenv("QT_LOGGING_RULES") 再应用 DConfig 规则
+    MLogger logger;
+    Q_UNUSED(logger)
+
     auto envType = qEnvironmentVariable("XDG_SESSION_TYPE");
     if (envType.contains("wayland")) {
-        qInfo() << QDateTime::currentDateTime().toString() << "notes:change wayland to xcb for QT_QPA_PLATFORM.";
+        qCInfo(appLog) << QDateTime::currentDateTime().toString() << "notes:change wayland to xcb for QT_QPA_PLATFORM.";
         qputenv("QT_QPA_PLATFORM", "xcb");
     }
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
@@ -65,8 +72,8 @@ int main(int argc, char *argv[])
 
     // 注册DBus服务
     if (!QDBusConnection::sessionBus().isConnected()) {
-        qWarning("Cannot connect to the D-Bus session bus.\n"
-                 "Please check your system settings and try again.\n");
+        qCWarning(appLog, "Cannot connect to the D-Bus session bus.\n"
+                          "Please check your system settings and try again.\n");
 
         if (!doStart)
             return -1;
@@ -76,7 +83,7 @@ int main(int argc, char *argv[])
     const QString objDbusPath = "/com/deepin/ScreenSaver";
     // add our D-Bus interface and connect to D-Bus
     if (!QDBusConnection::sessionBus().registerService(serviceName)) {
-        qWarning() << QString("Cannot register the \"%1\" service.\n").arg(serviceName);
+        qCWarning(appLog) << QString("Cannot register the \"%1\" service.\n").arg(serviceName);
 
         if (!doStart)
             return -1;
@@ -86,7 +93,7 @@ int main(int argc, char *argv[])
     Q_UNUSED(new ScreenSaverAdaptor(qobject_cast<DBusScreenSaver *>(server)))
 
     if (!QDBusConnection::sessionBus().registerObject(objDbusPath, server)) {
-        qWarning() << QString("Cannot register to the D-Bus object: \"%1\"\n").arg(objDbusPath);
+        qCWarning(appLog) << QString("Cannot register to the D-Bus object: \"%1\"\n").arg(objDbusPath);
 
         if (!doStart)
             return -1;

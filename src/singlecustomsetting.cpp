@@ -1,10 +1,11 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "singlecustomsetting.h"
 #include "customconfig.h"
 #include "commandlinehelper.h"
+#include "ddlog.h"
 
 #include <QDir>
 #include <QFile>
@@ -69,7 +70,7 @@ QLocalSocket *SingleCustomSetting::getNewClientConnect(const QByteArray &message
             }
         }
     } else {
-        qDebug() << localSocket->errorString();
+        qCDebug(appLog) << localSocket->errorString();
     }
 
     return localSocket;
@@ -89,7 +90,7 @@ void SingleCustomSetting::handleNewClient()
     bool isSetGetMonitorFiles = false;
 
     const auto &args = qApp->arguments();
-    qDebug() << "new client send data: " << args;
+    qCDebug(appLog) << "new client send data: " << args;
     for (const QString &arg : args) {
 
         if (!arg.startsWith("-") && QFile::exists(arg)) {
@@ -109,7 +110,7 @@ void SingleCustomSetting::handleNewClient()
         socket->waitForReadyRead();
 
         for (const QByteArray &i : socket->readAll().split(' '))
-            qDebug() << QString::fromLocal8Bit(QByteArray::fromBase64(i));
+            qCDebug(appLog) << QString::fromLocal8Bit(QByteArray::fromBase64(i));
     }
 }
 
@@ -120,7 +121,7 @@ void SingleCustomSetting::initConnect()
 
 void SingleCustomSetting::handleConnection()
 {
-    qDebug() << "new connection is coming";
+    qCDebug(appLog) << "new connection is coming";
     QLocalSocket *nextPendingConnection = m_localServer->nextPendingConnection();
     connect(nextPendingConnection, SIGNAL(readyRead()), this, SLOT(readData()));
 }
@@ -142,8 +143,8 @@ void SingleCustomSetting::readData()
 
     CommandLineHelper::instance()->process(arguments);
 
-    qDebug() << "m_userKey: " << m_userKey;
-    qDebug() << "arguments: " << arguments;
+    qCDebug(appLog) << "m_userKey: " << m_userKey;
+    qCDebug(appLog) << "arguments: " << arguments;
     QCommandLineOption optionConfig({ "c", "config" }, "Start config dialog of screen saver.", "screensaer-name", "");
     if (CommandLineHelper::instance()->isSet(optionConfig) && m_conf) {
         QString configName = CommandLineHelper::instance()->getOptionValue(optionConfig);

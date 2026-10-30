@@ -6,6 +6,7 @@
 #include "screensaverwindow.h"
 #include "screensaversettingdialog.h"
 #include "utils.h"
+#include "ddlog.h"
 
 #include <DDesktopEntry>
 #include <DSysInfo>
@@ -104,7 +105,7 @@ public:
             if (se->state == ScreenSaverOn) {
                 // ignore
             } else if (se->state == ScreenSaverOff) {
-                qInfo() << QDateTime::currentDateTime().toString() << "receive ScreenSaverOff signals and will quit.";
+                qCInfo(appLog) << QDateTime::currentDateTime().toString() << "receive ScreenSaverOff signals and will quit.";
                 emit screenSaver->stop();
             }
         }
@@ -266,7 +267,7 @@ bool DBusScreenSaver::Preview(const QString &name, int staysOn, bool preview)
     const static bool isWayland = qEnvironmentVariable("XDG_SESSION_TYPE").contains("wayland");
     if (!preview && isWayland) {
         // 在wayland环境下无法接收到键盘事件，通过强制抓取键盘来进行规避
-        qInfo() << QDateTime::currentDateTime().toString() << "current not preview,and wayland is true,grab keyboard!";
+        qCInfo(appLog) << QDateTime::currentDateTime().toString() << "current not preview,and wayland is true,grab keyboard!";
         XGrabKeyBoard();
 
         // 在wayland环境，无法从x11接收到ScreenSaverOff信号，导致即使屏保程序正在显示，锁屏界面也会弹出显示到屏保程序之上。
@@ -367,7 +368,7 @@ void DBusScreenSaver::RefreshScreenSaverList()
             if (QResource::registerResource(info.absoluteFilePath())) {
                 m_resourceList << info.absoluteFilePath();
             } else {
-                qWarning() << "Failed on load resource file:" << info.absoluteFilePath();
+                qCWarning(appLog) << "Failed on load resource file:" << info.absoluteFilePath();
             }
         }
     }
@@ -389,7 +390,7 @@ void DBusScreenSaver::RefreshScreenSaverList()
             QDir cover_dir(moduleDir.filePath("cover"));
 
             if (!copyDir(cover_dir, getAppRuntimePath())) {
-                qWarning() << "Failed Copy the" << cover_dir << "directory to" << getAppRuntimePath();
+                qCWarning(appLog) << "Failed Copy the" << cover_dir << "directory to" << getAppRuntimePath();
             }
         }
     }
@@ -658,7 +659,7 @@ void DBusScreenSaver::onDBusPropertyChanged(const QString &interface, const QVar
             if (ok)
                 emit batteryScreenSaverTimeoutChanged(value);
             else
-                qWarning() << "Failed the value cast to int type, name:" << begin.key() << "value:" << begin.value();
+                qCWarning(appLog) << "Failed the value cast to int type, name:" << begin.key() << "value:" << begin.value();
         } else if (QStringLiteral("LinePowerScreensaverDelay") == begin.key()) {
             bool ok = false;
             int value = begin.value().toInt(&ok);
@@ -666,7 +667,7 @@ void DBusScreenSaver::onDBusPropertyChanged(const QString &interface, const QVar
             if (ok)
                 emit linePowerScreenSaverTimeoutChanged(value);
             else
-                qWarning() << "Failed the value cast to int type, name:" << begin.key() << "value:" << begin.value();
+                qCWarning(appLog) << "Failed the value cast to int type, name:" << begin.key() << "value:" << begin.value();
         }
 
         ++begin;
@@ -691,7 +692,7 @@ void DBusScreenSaver::onInputEventReceived(QEvent::Type type)
             return;
         }
     }
-    qInfo() << QDateTime::currentDateTime().toString() << "receive input evnet and will quit:" << type;
+    qCInfo(appLog) << QDateTime::currentDateTime().toString() << "receive input evnet and will quit:" << type;
     Stop();
 }
 
@@ -776,10 +777,10 @@ void DBusScreenSaver::XGrabKeyBoard()
     xcb_grab_keyboard_reply_t *reply;
     if ((reply = xcb_grab_keyboard_reply(conn, cookie, nullptr))) {
         if (reply->status == XCB_GRAB_STATUS_SUCCESS) {
-            qInfo() << QDateTime::currentDateTime().toString() << "successfully grabbed the keyboard.";
+            qCInfo(appLog) << QDateTime::currentDateTime().toString() << "successfully grabbed the keyboard.";
             m_grabKeyboard = true;
         } else {
-            qInfo() << QDateTime::currentDateTime().toString() << "failedy grabbed the keyboard.";
+            qCInfo(appLog) << QDateTime::currentDateTime().toString() << "failedy grabbed the keyboard.";
             m_grabKeyboard = false;
         }
         free(reply);
@@ -793,13 +794,13 @@ void DBusScreenSaver::XUnGrabKeyBoard()
     m_grabKeyboard = false;
 
     auto cookie = xcb_ungrab_keyboard(QX11Info::connection(), XCB_TIME_CURRENT_TIME);
-    qInfo() << QDateTime::currentDateTime().toString() << "xcb ungrab keyboard:" << &cookie;
+    qCInfo(appLog) << QDateTime::currentDateTime().toString() << "xcb ungrab keyboard:" << &cookie;
 }
 
 void DBusScreenSaver::onLockedChanged(const bool locked)
 {
     if (locked) {
-        qInfo() << QDateTime::currentDateTime().toString() << "I will quit,becase session manager emit LockedChanged and locked is:" << locked;
+        qCInfo(appLog) << QDateTime::currentDateTime().toString() << "I will quit,becase session manager emit LockedChanged and locked is:" << locked;
         stop();
     }
 }

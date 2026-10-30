@@ -12,6 +12,17 @@
             "description": "set current screen saver",
             "permissions": "readwrite",
             "visibility": "public"
+        },
+        "log_rules": {
+            "value": "org.deepin.screensaver*.debug=false;org.deepin.screensaver*.info=false;org.deepin.screensaver*.warning=true;org.deepin.customscreensaver*.debug=false;org.deepin.customscreensaver*.info=false;org.deepin.customscreensaver*.warning=true",
+            "serial": 0,
+            "flags": [],
+            "name": "Qt logging rules",
+            "name[zh_CN]": "Qt 日志规则",
+            "description[zh_CN]": "Qt 日志过滤规则，deepin-debug-config 调试模式通过本键动态调整日志级别",
+            "description": "qt logging rules, deepin-debug-config debugging mode dynamically adjusts the log level",
+            "permissions": "readwrite",
+            "visibility": "private"
         }
     }
 }

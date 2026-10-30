@@ -1,8 +1,9 @@
-// SPDX-FileCopyrightText: 2023 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2023-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "singleinstance.h"
+#include "ddlog.h"
 #include <QtNetwork/qlocalserver.h>
 #include <QLocalServer>
 #include <QLocalSocket>
@@ -55,7 +56,7 @@ void SingleInstance::sendNewClient()
 {
     QByteArray data { nullptr };
     const auto &args = qApp->arguments();
-    qDebug() << "new client send data: " << args;
+    qCDebug(appLog) << "new client send data: " << args;
     for (const QString &arg : args) {
         if (!arg.startsWith("-") && QFile::exists(arg)) {
             data.append(QDir(arg).absolutePath().toLocal8Bit().toBase64());
@@ -84,7 +85,7 @@ QLocalSocket *SingleInstance::getNewClientConnect(const QByteArray &message)
             }
         }
     } else {
-        qDebug() << localSocket->errorString();
+        qCDebug(appLog) << localSocket->errorString();
     }
 
     return localSocket;
@@ -92,7 +93,7 @@ QLocalSocket *SingleInstance::getNewClientConnect(const QByteArray &message)
 
 void SingleInstance::handleConnection()
 {
-    qDebug() << "new connection is coming";
+    qCDebug(appLog) << "new connection is coming";
     QLocalSocket *nextPendingConnection = m_localServer->nextPendingConnection();
     connect(nextPendingConnection, SIGNAL(readyRead()), this, SLOT(readData()));
 }

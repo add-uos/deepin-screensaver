@@ -5,6 +5,7 @@
 #include "slideshowconfigdialog.h"
 #include "slideshowconfig.h"
 #include "config/contenttitle.h"
+#include "ddlog.h"
 
 #include <QWindow>
 #include <DFileDialog>
@@ -218,7 +219,7 @@ void SlideShowConfigDialog::selectPath()
         // 如果默认值为空或不存在，则强制设置为图片目录
         if (currentPath.isEmpty() || !QFile::exists(currentPath)) {
             currentPath = QDir::homePath() + "/Pictures/Wallpapers";
-            qWarning() << "The default is empty or does not exist,set path is " << currentPath;
+            qCWarning(appLog) << "The default is empty or does not exist,set path is " << currentPath;
         }
     }
 

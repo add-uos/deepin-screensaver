@@ -1,10 +1,12 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "slideshowscreensaver.h"
 #include "commandlinemanager.h"
 #include "slideshowconfig.h"
+#include "logger.h"
+#include "ddlog.h"
 
 #include <DApplication>
 
@@ -25,9 +27,14 @@ DWIDGET_USE_NAMESPACE
 
 int main(int argc, char *argv[])
 {
+    // 动态日志规则（DConfig log_rules）须在任何日志打印前初始化：
+    // MLogger 内部会先 qunsetenv("QT_LOGGING_RULES") 再应用 DConfig 规则
+    MLogger logger;
+    Q_UNUSED(logger)
+
     auto envType = qEnvironmentVariable("XDG_SESSION_TYPE");
     if (envType.contains("wayland")) {
-        qInfo() << QDateTime::currentDateTime().toString() << "notes:change wayland to xcb for QT_QPA_PLATFORM.";
+        qCInfo(appLog) << QDateTime::currentDateTime().toString() << "notes:change wayland to xcb for QT_QPA_PLATFORM.";
         qputenv("QT_QPA_PLATFORM", "xcb");
     }
 
@@ -46,7 +53,7 @@ int main(int argc, char *argv[])
         QWindow *window = QWindow::fromWinId(windowHwnd);
 
         if (!window) {
-            qDebug() << "Error:not found QWindow by window id:" << windowId;
+            qCDebug(appLog) << "Error:not found QWindow by window id:" << windowId;
             return -1;
         }
 
@@ -57,7 +64,7 @@ int main(int argc, char *argv[])
 
         Display *display = XOpenDisplay(nullptr);
         if (!display) {
-            qWarning() << "can not connect xservice.";
+            qCWarning(appLog) << "can not connect xservice.";
             return -1;
         }
 
@@ -90,7 +97,7 @@ int main(int argc, char *argv[])
             SlideshowConfig::instance()->setShuffle(false);
 
     } else if (CommandLineManager::instance()->isSet("config")) {
-        qInfo() << "show dconfig dialog";
+        qCInfo(appLog) << "show dconfig dialog";
         if (SlideshowConfig::instance()->startCustomConfig())
             return a.exec();
         return 0;

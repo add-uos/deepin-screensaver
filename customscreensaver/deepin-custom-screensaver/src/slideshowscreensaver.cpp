@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2022 UnionTech Software Technology Co., Ltd.
+// SPDX-FileCopyrightText: 2022-2026 UnionTech Software Technology Co., Ltd.
 //
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include "slideshowscreensaver.h"
 #include "slideshowconfig.h"
+#include "ddlog.h"
 
 #include <DApplication>
 
@@ -54,16 +55,16 @@ bool SlideshowScreenSaver::nativeEventFilter(const QByteArray &eventType, void *
         int type = (event->response_type & ~0x80);
         if (XCB_CONFIGURE_NOTIFY == type) {
             xcb_configure_notify_event_t *ce = reinterpret_cast<xcb_configure_notify_event_t *>(event);
-            qInfo() << "parent window size changed" << ce->width << ce->height;
+            qCInfo(appLog) << "parent window size changed" << ce->width << ce->height;
             QSize widSize = mapFromHandle(QSize(ce->width, ce->height));
             if (widSize != size()) {
-                qInfo() << "update window size:" << widSize;
+                qCInfo(appLog) << "update window size:" << widSize;
                 resize(widSize);
             }
         } else if (XCB_DESTROY_NOTIFY == type) {
             xcb_destroy_notify_event_t *ce = reinterpret_cast<xcb_destroy_notify_event_t *>(event);
             if (ce->window == Window(this->windowHandle()->winId())) {
-                qInfo() << "parent window closed";
+                qCInfo(appLog) << "parent window closed";
                 QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
             }
         }
@@ -109,7 +110,7 @@ void SlideshowScreenSaver::onUpdateImage()
         m_invaildPath.clear();
     } else {
         m_invaildPath = m_playOrder.value(m_currentIndex);
-        qWarning() << "There is an issue with the format of the image" << m_invaildPath;
+        qCWarning(appLog) << "There is an issue with the format of the image" << m_invaildPath;
     }
     scaledPixmap();
     update();
@@ -140,7 +141,7 @@ void SlideshowScreenSaver::closeEvent(QCloseEvent *event)
 QSize SlideshowScreenSaver::mapFromHandle(const QSize &handleSize)
 {
     qreal ratio = devicePixelRatioF();
-    qDebug() << "parent window handle size" << handleSize << "devicePixelRatio" << ratio;
+    qCDebug(appLog) << "parent window handle size" << handleSize << "devicePixelRatio" << ratio;
 
     if (ratio > 0 && ratio != 1.0)
         return handleSize / ratio;
@@ -200,7 +201,7 @@ void SlideshowScreenSaver::loadSlideshowImages()
         QDir::Filters filters = QDir::Files | QDir::NoDotAndDotDot | QDir::Readable;
         QFileInfoList infoList = dir.entryInfoList(filters, QDir::Name);
         if (infoList.isEmpty()) {
-            qWarning() << "Warning:no image file in " << path;
+            qCWarning(appLog) << "Warning:no image file in " << path;
             m_timer->stop();
             return;
         }
@@ -237,7 +238,7 @@ void SlideshowScreenSaver::initPixMap()
             m_invaildPath.clear();
         } else {
             m_invaildPath = m_playOrder.first();
-            qWarning() << "There is an issue with the format of the image" << m_invaildPath;
+            qCWarning(appLog) << "There is an issue with the format of the image" << m_invaildPath;
         }
         scaledPixmap();
         m_currentIndex = 1;

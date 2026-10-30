@@ -34,6 +34,7 @@ set(SOURCES
     src/config/truncatelineedit.cpp
     src/config/timeintervalwidget.cpp
     src/singleinstance.cpp
+    src/logger.cpp
 )
 
 # 头文件
@@ -47,6 +48,8 @@ set(HEADERS
     src/config/truncatelineedit.h
     src/config/timeintervalwidget.h
     src/singleinstance.h
+    src/logger.h
+    src/ddlog.h
 )
 
 # 资源文件
